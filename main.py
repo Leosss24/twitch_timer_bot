@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-BOT_NICK = os.getenv("MiBotPizza")
+BOT_NICK = os.getenv("mibotpizza")
 CHANNEL = os.getenv("mery_soldier")
 TOKEN = os.getenv("048ttawrrqpc20b5rqxlxtq7nh7zu6")
 
