@@ -1,35 +1,38 @@
-from flask import Flask, request
-from threading import Timer
-import socket
-import time
+import asyncio
+from twitchio.ext import commands
 import os
 
-app = Flask(__name__)
+BOT_NICK = os.getenv('BOT_NICK')
+CHANNEL = os.getenv('CHANNEL')
+TOKEN = os.getenv('TWITCH_TOKEN')
 
-BOT_NICK = os.getenv("mibotpizza")
-CHANNEL = os.getenv("mery_soldier")
-TOKEN = os.getenv("048ttawrrqpc20b5rqxlxtq7nh7zu6")
+class Bot(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            irc_token=TOKEN,
+            nick=BOT_NICK,
+            prefix='!',
+            initial_channels=[CHANNEL]
+        )
 
-def send_message(msg):
-    server = 'irc.chat.twitch.tv'
-    port = 6667
-    with socket.socket() as s:
-        s.connect((server, port))
-        s.send(f"PASS {TOKEN}\n".encode('utf-8'))
-        s.send(f"NICK {BOT_NICK}\n".encode('utf-8'))
-        s.send(f"JOIN #{CHANNEL}\n".encode('utf-8'))
-        time.sleep(1)
-        s.send(f"PRIVMSG #{CHANNEL} :{msg}\n".encode('utf-8'))
+    async def event_ready(self):
+        print(f'Bot conectado como | {self.nick}')
 
-@app.route('/timer', methods=['GET'])
-def start_timer():
-    try:
-        minutes = int(request.args.get('text'))
-        send_message(f"Se ha iniciado un temporizador de {minutes} minutos")
-        Timer(minutes * 60, send_message, args=[f"Temporizador de {minutes} minutos finalizado"]).start()
-        return f"Temporizador iniciado por {minutes} minutos"
-    except:
-        return "Error: uso correcto !pizza 15"
+    async def event_message(self, message):
+        if message.author.name.lower() == BOT_NICK.lower():
+            return
+        await self.handle_commands(message)
+
+    @commands.command(name='pizza')
+    async def pizza_command(self, ctx):
+        try:
+            minutos = int(ctx.message.content.split(' ')[1])
+            await ctx.send(f'Se ha iniciado un temporizador de {minutos} minutos')
+            await asyncio.sleep(minutos * 60)
+            await ctx.send(f'Temporizador de {minutos} minutos finalizado')
+        except (IndexError, ValueError):
+            await ctx.send('Error: usa !pizza seguido de un número. Ej: !pizza 15')
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    bot = Bot()
+    bot.run()
