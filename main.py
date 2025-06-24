@@ -2,9 +2,9 @@ import asyncio
 from twitchio.ext import commands
 import os
 
-BOT_NICK = os.getenv('BOT_NICK')
-CHANNEL = os.getenv('CHANNEL')
-TOKEN = os.getenv('TWITCH_TOKEN')
+BOT_NICK = os.getenv('mibotpizza')
+CHANNEL = os.getenv('mery_soldier')
+TOKEN = os.getenv('048ttawrrqpc20b5rqxlxtq7nh7zu6')
 
 class Bot(commands.Bot):
     def __init__(self):
